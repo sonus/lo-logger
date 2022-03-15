@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Log;
 
 use App\Entity\Log;
 use App\Repository\LogRepository;
 
-class LogImporterService
+class LogService
 {
     public function __construct(private LogRepository $logRepository,)
     {

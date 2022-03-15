@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\GatherLog;
 
+use App\Service\Config\ConfigService;
+use App\Service\Log\LogService;
 use Generator;
 use Kassner\LogParser\LogParser;
 use SplFileObject;
@@ -16,9 +18,9 @@ abstract class AbstractGatherLogger
 
     public function __construct(
         protected ConfigService $configService,
-        protected LogImporterService $logImporterService,
-        private string $logPath,
-        private string $logFormat)
+        protected LogService    $logService,
+        private string          $logPath,
+        private string          $logFormat)
     {
         $this->logParser = new LogParser($this->logFormat);
         $this->package = new Package(new EmptyVersionStrategy());

@@ -19,7 +19,7 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-    App\Service\GatherLog:
+    App\Service\GatherLog\GatherLog:
         bind:
             $logPath: '%env(LOG_PATH)%'
             $logFormat: '%env(LOG_FORMAT)%'

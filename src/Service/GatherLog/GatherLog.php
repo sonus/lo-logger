@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\GatherLog;
 
 use Kassner\LogParser\FormatException;
 
@@ -24,7 +24,7 @@ class GatherLog extends AbstractGatherLogger
                 echo 'Invalid Service Log ', $e->getMessage(), " at : \n", "\n\n", $iteration . PHP_EOL, "\n\n";
             }
         }
-        $this->logImporterService->saveLog($logs);
+        $this->logService->saveLog($logs);
         $this->configService->saveConfig('service_logs', $processed + $line);
         return $line;
     }

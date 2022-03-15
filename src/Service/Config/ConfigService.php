@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Config;
 
 use App\Entity\Config;
 use App\Repository\ConfigRepository;
@@ -9,7 +9,6 @@ use Doctrine\ORM\EntityManagerInterface;
 class ConfigService
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
         private ConfigRepository       $configRepository,
     )
     {
