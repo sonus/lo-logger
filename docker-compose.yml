@@ -1,0 +1,51 @@
+version: '3.4'
+
+services:
+  lo-logger:
+    image: ${CONTAINER_REGISTRY_BASE}
+    build:
+      context: ./
+      target: dev
+    depends_on:
+      - db
+    env_file:
+      - ./.env.local
+    volumes:
+      - ./:/srv/api:rw,cached
+    ports:
+      - "8080:80"
+    networks:
+      - api-net
+      - app-net
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  db:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=lo_logger
+      - MYSQL_USER=lo_logger
+      - MYSQL_PASSWORD=myadmin
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - app-net
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+networks:
+  api-net:
+    external:
+      name: api-net
+  app-net:
+    driver: bridge
+
+volumes:
+  db-data: {}
