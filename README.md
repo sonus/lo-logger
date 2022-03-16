@@ -18,6 +18,8 @@ You start application on your local environment by running the following command
 ```sh
 docker-compose up --build
 ```
+
+You can now view the application swagger interface at [http://localhost:808/api](http://localhost:808/api)
 ## Access Database
 
 You can connect to local db port under
