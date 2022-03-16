@@ -11,7 +11,7 @@ Read from the aggregated log file that contains logs from several services and w
 
 ## Installation
 
-You start the application in your local environment by running the following command.
+Start the application in your local environment by running the following command.
 
 *Please NOTE:* This command would take some time when you run it for the first time since it creates vendors, DB, DB migration etc.
 
