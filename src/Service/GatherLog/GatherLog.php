@@ -21,7 +21,7 @@ class GatherLog extends AbstractGatherLogger
             try {
                 $logs[] = $this->logParser->parse($iteration . PHP_EOL);
             } catch (FormatException $e) {
-                // echo 'Invalid Service Log ', $e->getMessage(), " at : \n", "\n\n", $iteration . PHP_EOL, "\n\n";
+                 echo 'Invalid Service Log ', $e->getMessage(), " at : \n", $iteration . PHP_EOL;
             }
         }
         $this->logService->saveLog($logs);

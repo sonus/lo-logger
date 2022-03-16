@@ -2,11 +2,9 @@ FROM alpine:3.15
 
 ARG PHP_VERSION="8.0.16-r0"
 
-# https://github.com/wp-cli/wp-cli/issues/3840
-ENV PAGER="more"
-
+# DevNote: Add go to the apk add for ngnix nginx-log-generator
 # Install packages and remove default server definition
-RUN apk --no-cache add php8=${PHP_VERSION} \
+RUN apk --no-cache add go php8=${PHP_VERSION} \
     php8-ctype \
     php8-curl \
     php8-dom \
@@ -40,18 +38,23 @@ RUN apk --no-cache add php8=${PHP_VERSION} \
 RUN ln -s /usr/bin/php8 /usr/bin/php
 
 # Install PHP tools
-RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
 # Configure nginx
-COPY config/nginx.conf /etc/nginx/nginx.conf
+COPY docker/config/nginx.conf /etc/nginx/nginx.conf
 
 # Configure PHP-FPM
-COPY config/fpm-pool.conf /etc/php8/php-fpm.d/www.conf
-COPY config/php.ini /etc/php8/conf.d/custom.ini
+COPY docker/config/fpm-pool.conf /etc/php8/php-fpm.d/www.conf
+COPY docker/config/php.ini /etc/php8/conf.d/custom.ini
 
 # Configure supervisord
-COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Dev Setup only for generater
+COPY development/main.go ./
+COPY development/go.mod ./
+COPY development/go.sum ./
+RUN go build
 
 # Setup document root
 RUN mkdir -p /var/www/html
@@ -59,6 +62,7 @@ RUN mkdir -p /var/www/html
 # Make sure files/folders needed by the processes are accessable when they run under the nobody user
 RUN chown -R nobody.nobody /var/www/html && \
   chown -R nobody.nobody /run && \
+  chown -R nobody.nobody /var/lib/nginx && \
   chown -R nobody.nobody /var/lib/nginx && \
   chown -R nobody.nobody /var/log/nginx
 
@@ -71,7 +75,6 @@ COPY --chown=nobody src/ /var/www/html/
 
 # Expose the port nginx is reachable on
 EXPOSE 8080
-
 # Let supervisord start nginx & php-fpm
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 

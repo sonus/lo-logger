@@ -26,22 +26,26 @@ class GatherLogCommand extends AbstractGatherLog
     protected function configure(): void
     {
         $this
-            ->addOption('debug', null, InputOption::VALUE_NONE, 'Debug option provides information on consumed memory for the process.');
+            ->addOption('debug', null, InputOption::VALUE_NONE, 'Debug option provides information on consumed memory for the process.')
+            ->addOption('wait', null, InputOption::VALUE_OPTIONAL, 'Wait option will wait for the provided seconds also stop showing symfony style cli.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $gatheredLogs = $this->gatherLog
             ->gatherLogIfExists();
-
-        $io = new SymfonyStyle($input, $output);
-        if ($input->getOption('debug')) {
-            $io->caution("Memory Consumed : " . $this->formatBytes(memory_get_peak_usage()));
-        }
-        if ($gatheredLogs) {
-            $io->success(sprintf("Successfully gathered %s of Log(s).", $gatheredLogs));
+        if ($input->getOption('wait')) {
+            sleep($input->getOption('wait'));
         } else {
-            $io->info("No new logs has been gathered.");
+            $io = new SymfonyStyle($input, $output);
+            if ($input->getOption('debug')) {
+                $io->caution("Memory Consumed : " . $this->formatBytes(memory_get_peak_usage()));
+            }
+            if ($gatheredLogs) {
+                $io->success(sprintf("Successfully gathered %s of Log(s).", $gatheredLogs));
+            } else {
+                $io->info("No new logs has been gathered.");
+            }
         }
 
         return Command::SUCCESS;

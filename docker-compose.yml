@@ -2,23 +2,19 @@ version: '3.4'
 
 services:
   lo-logger:
-    build:
-      context: ./
+    container_name: lo_logger_test
     depends_on:
       - db
     env_file:
       - ./.env.local
     volumes:
-      - ./:/srv/api:rw,cached
+      - ./:/var/www/html
+    build: .
     ports:
-      - "8080:80"
+      - "8080:8080"
     networks:
       - api-net
       - app-net
-    logging:
-      options:
-        max-size: "100m"
-        max-file: "3"
 
   db:
     image: mysql:5.7
