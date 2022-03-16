@@ -50,6 +50,9 @@ COPY docker/config/php.ini /etc/php8/conf.d/custom.ini
 # Configure supervisord
 COPY docker/config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+#Adding Entrypoint
+COPY docker/config/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
+
 # Dev Setup only for generater
 COPY development/main.go ./
 COPY development/go.mod ./
@@ -66,6 +69,8 @@ RUN chown -R nobody.nobody /var/www/html && \
   chown -R nobody.nobody /var/lib/nginx && \
   chown -R nobody.nobody /var/log/nginx
 
+RUN chmod +x /usr/local/bin/docker-entrypoint
+
 # Switch to use a non-root user from here on
 USER nobody
 
@@ -75,8 +80,9 @@ COPY --chown=nobody src/ /var/www/html/
 
 # Expose the port nginx is reachable on
 EXPOSE 8080
+
 # Let supervisord start nginx & php-fpm
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+ENTRYPOINT ["docker-entrypoint"]
 
 # Configure a healthcheck to validate that everything is up&running
 HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1:8080/fpm-ping

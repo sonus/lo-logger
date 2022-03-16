@@ -2,7 +2,6 @@ version: '3.4'
 
 services:
   lo-logger:
-    container_name: lo_logger_test
     depends_on:
       - db
     env_file:
@@ -20,7 +19,7 @@ services:
     image: mysql:5.7
     environment:
       - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=lo_logger
+      - MYSQL_DATABASE=lo1
       - MYSQL_USER=lo_logger
       - MYSQL_PASSWORD=myadmin
     volumes:

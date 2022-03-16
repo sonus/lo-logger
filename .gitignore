@@ -1,6 +1,5 @@
 
 ###> symfony/framework-bundle ###
-/.env.local
 /.env.local.php
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
@@ -9,6 +8,8 @@
 /vendor/
 /report/
 .DS_Store
+asset/log/services.log
+
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###
