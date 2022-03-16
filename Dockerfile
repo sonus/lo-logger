@@ -4,7 +4,7 @@ ARG PHP_VERSION="8.0.16-r0"
 
 # DevNote: Add go to the apk add for ngnix nginx-log-generator
 # Install packages and remove default server definition
-RUN apk --no-cache add go php8=${PHP_VERSION} \
+RUN apk --no-cache add php8=${PHP_VERSION} \
     php8-ctype \
     php8-curl \
     php8-dom \
@@ -54,10 +54,10 @@ COPY docker/config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/config/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 
 # Dev Setup only for generater
-COPY development/main.go ./
-COPY development/go.mod ./
-COPY development/go.sum ./
-RUN go build
+# COPY development/main.go ./
+# COPY development/go.mod ./
+# COPY development/go.sum ./
+# RUN go build
 
 # Setup document root
 RUN mkdir -p /var/www/html

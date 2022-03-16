@@ -35,7 +35,7 @@ Nginx Log Generator is an underlying code that will generate real-time fake logs
 
 To disable this open ``docker/config/supervisord.conf`` file and remove the following section.
 ```conf
-- [program:genarate_log]
+- [program:generate_log]
 - command=/var/www/html/development/nginx-log-generator
 - autorestart=true
 ```
