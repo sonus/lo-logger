@@ -16,6 +16,7 @@ You start application on your local environment by running the following command
 *Please NOTE:* This command would take sometime when you run it on the first time since its creating vendors, db, db migration etc.
 
 ```sh
+docker network create api-net
 docker-compose up --build
 ```
 

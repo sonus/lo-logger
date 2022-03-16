@@ -27,6 +27,7 @@ services:
       - "3306:3306"
     networks:
       - app-net
+      - api-net
     logging:
       options:
         max-size: "100m"
