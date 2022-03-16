@@ -19,7 +19,6 @@ services:
     image: mysql:5.7
     environment:
       - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=lo1
       - MYSQL_USER=lo_logger
       - MYSQL_PASSWORD=myadmin
     volumes:
