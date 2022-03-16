@@ -27,7 +27,7 @@ class GatherLogTest extends KernelTestCase
         $application = new Application($kernel);
         $command = $application->find('app:gather-log');
         $this->commandTester = new CommandTester($command);
-        $this->commandTester->execute([]);
+
     }
 
     public function testGatherLogCommand(): void
@@ -37,7 +37,7 @@ class GatherLogTest extends KernelTestCase
         $this->configService->deleteAll();
         $this->commandTester->execute([]);
         $this->commandTester->assertCommandIsSuccessful();
-        echo $output = $this->commandTester->getDisplay();
+        $output = $this->commandTester->getDisplay();
         $this->assertStringContainsString('Successfully gathered', $output);
     }
 
@@ -45,7 +45,7 @@ class GatherLogTest extends KernelTestCase
     {
         $this->commandTester->execute([]);
         $this->commandTester->assertCommandIsSuccessful();
-        echo $output = $this->commandTester->getDisplay();
+        $output = $this->commandTester->getDisplay();
         $this->assertStringContainsString('No new logs has been gathered.', $output);
     }
 

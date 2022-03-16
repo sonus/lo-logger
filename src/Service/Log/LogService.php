@@ -18,11 +18,11 @@ class LogService
     public function saveLog(array $logs)
     {
         foreach ($logs as $log) {
-            $category = new Log();
-            $category->setServiceName($log->serverName)
+            $objLog = new Log();
+            $objLog->setServiceName($log->serverName)
                 ->setLogDate($this->getCurrentDate($log->stamp))
                 ->setStatusCode($log->status);
-            $this->logRepository->persist($category);
+            $this->logRepository->add($objLog);
         }
         $this->logRepository->flush();
     }
@@ -30,6 +30,7 @@ class LogService
     /**
      * @param SearchLogDto $searchLogDto
      * @return int
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getCount(SearchLogDto $searchLogDto): int
     {

@@ -51,14 +51,12 @@ class LogRepository extends ServiceEntityRepository
 
     public function persist(Log $log)
     {
-        $em = $this->getEntityManager();
-        $em->persist($log);
+        $this->_em->persist($log);
     }
 
     public function flush()
     {
-        $em = $this->getEntityManager();
-        $em->flush();
+        $this->_em->flush();
     }
 
     /**

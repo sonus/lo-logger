@@ -1,93 +1,79 @@
-ARG PHP_VERSION=8.1
+FROM alpine:3.15
 
-FROM php:${PHP_VERSION}-fpm-alpine AS base_api_platform
+ARG PHP_VERSION="8.0.16-r0"
 
-RUN apk add --no-cache \
-		acl \
-		file \
-		gettext \
-		mysql \
-		git \
-		shadow \
-		nginx   \
-		supervisor \
-	;
+# https://github.com/wp-cli/wp-cli/issues/3840
+ENV PAGER="more"
 
-RUN set -ex \
-  	&& apk update \
-    && apk add --no-cache libsodium \
-    && apk add --no-cache --virtual build-dependencies g++ make autoconf libsodium-dev\
-    && docker-php-source extract \
-    && pecl install libsodium \
-    && pecl install redis \
-    && docker-php-ext-enable sodium \
-    && docker-php-ext-enable redis \
-    && docker-php-source delete \
-    && cd  / && rm -fr /src \
-    && apk del build-dependencies \
-    && rm -rf /tmp/*
+# Install packages and remove default server definition
+RUN apk --no-cache add php8=${PHP_VERSION} \
+    php8-ctype \
+    php8-curl \
+    php8-dom \
+    php8-exif \
+    php8-fileinfo \
+    php8-fpm \
+    php8-gd \
+    php8-iconv \
+    php8-intl \
+    php8-mbstring \
+    php8-mysqli \
+    php8-opcache \
+    php8-openssl \
+    php8-pecl-imagick \
+    php8-pecl-redis \
+    php8-phar \
+    php8-session \
+    php8-simplexml \
+    php8-soap \
+    php8-xml \
+    php8-xmlreader \
+    php8-zip \
+    php8-zlib \
+    php8-pdo \
+    php8-xmlwriter \
+    php8-tokenizer \
+    php8-pdo_mysql \
+    nginx supervisor curl tzdata htop mysql-client dcron
 
-ARG APCU_VERSION=5.1.18
-RUN set -eux; \
-	apk add --no-cache --virtual .build-deps \
-		$PHPIZE_DEPS \
-		icu-dev \
-		libzip-dev \
-		zlib-dev \
-	; \
-	\
-	docker-php-ext-install -j "$(getconf _NPROCESSORS_ONLN)" \
-		intl \
-		pdo \
-		pdo_mysql \
-		zip \
-		sockets \
-	; \
-	pecl install \
-		apcu-${APCU_VERSION} \
-	; \
-	pecl clear-cache; \
-	docker-php-ext-enable \
-		apcu \
-		opcache \
-	; \
-	\
-	runDeps="$( \
-		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
-			| tr ',' '\n' \
-			| sort -u \
-			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-	)"; \
-	apk add --no-cache --virtual .api-phpexts-rundeps $runDeps; \
-	\
-	apk del .build-deps
+# Symlink php8 => php
+RUN ln -s /usr/bin/php8 /usr/bin/php
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-COPY docker/php/php.ini /usr/local/etc/php/php.ini
+# Install PHP tools
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
-RUN apk update
-RUN apk add curl bash gzip
-RUN curl -sS https://get.symfony.com/cli/installer | bash
+# Configure nginx
+COPY config/nginx.conf /etc/nginx/nginx.conf
 
-RUN mv /root/.symfony/bin/symfony /usr/local/bin/symfony
+# Configure PHP-FPM
+COPY config/fpm-pool.conf /etc/php8/php-fpm.d/www.conf
+COPY config/php.ini /etc/php8/conf.d/custom.ini
 
-COPY docker/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
-COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY docker/supervisor.d/supervisor-fpm.ini /etc/supervisor.d/supervisor.ini
+# Configure supervisord
+COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-RUN chmod 644 /etc/supervisord.conf && touch /var/log/supervisord.log && chmod 777 /var/log/supervisord.log
+# Setup document root
+RUN mkdir -p /var/www/html
 
+# Make sure files/folders needed by the processes are accessable when they run under the nobody user
+RUN chown -R nobody.nobody /var/www/html && \
+  chown -R nobody.nobody /run && \
+  chown -R nobody.nobody /var/lib/nginx && \
+  chown -R nobody.nobody /var/log/nginx
 
-ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN set -eux; \
-	composer clear-cache
-ENV PATH="${PATH}:/root/.composer/vendor/bin"
+# Switch to use a non-root user from here on
+USER nobody
 
-RUN mkdir -p /var/log/newrelic /run/nginx/
+# Add application
+WORKDIR /var/www/html
+COPY --chown=nobody src/ /var/www/html/
 
-COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
-RUN chmod +x /usr/local/bin/docker-entrypoint
+# Expose the port nginx is reachable on
+EXPOSE 8080
 
-ENTRYPOINT ["docker-entrypoint"]
+# Let supervisord start nginx & php-fpm
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 
-CMD ["/usr/bin/supervisord", "--nodaemon", "--configuration", "/etc/supervisord.conf"]
+# Configure a healthcheck to validate that everything is up&running
+HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1:8080/fpm-ping
