@@ -20,14 +20,21 @@ class LogService
         foreach ($logs as $log) {
             $category = new Log();
             $category->setServiceName($log->serverName)
-                ->setStartDate($this->getCurrentDate($log->stamp))
-                ->setEndDate($this->getCurrentDate($log->stamp))
+                ->setLogDate($this->getCurrentDate($log->stamp))
                 ->setStatusCode($log->status);
             $this->logRepository->persist($category);
         }
         $this->logRepository->flush();
     }
 
+    /**
+     * @param SearchLogDto $searchLogDto
+     * @return int
+     */
+    public function getCount(SearchLogDto $searchLogDto): int
+    {
+        return $this->logRepository->getCount($searchLogDto);
+    }
 
     private function getCurrentDate($time): \DateTimeInterface
     {
@@ -35,6 +42,11 @@ class LogService
             "@" . $time,
             new \DateTimeZone("UTC")
         );
+    }
+
+    public function deleteAll()
+    {
+        return $this->logRepository->deleteAll();
     }
 
 }

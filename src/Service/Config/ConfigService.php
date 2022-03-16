@@ -35,4 +35,9 @@ class ConfigService
         return $config;
     }
 
+    public function deleteAll()
+    {
+        $this->configRepository->deleteAll();
+    }
+
 }

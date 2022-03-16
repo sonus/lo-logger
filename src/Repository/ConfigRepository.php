@@ -17,6 +17,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ConfigRepository extends ServiceEntityRepository
 {
+    use RepositoryHelperTrait;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Config::class);
@@ -93,7 +95,6 @@ class ConfigRepository extends ServiceEntityRepository
             ->andWhere('c.name = :val')
             ->setParameter('val', $name)
             ->getQuery()
-            ->getOneOrNullResult()
-            ;
+            ->getOneOrNullResult();
     }
 }

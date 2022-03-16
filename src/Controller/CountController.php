@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException;
 use App\Service\Log\LogService;
+use App\Service\Log\SearchLogDto;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,22 +26,23 @@ class CountController extends AbstractController
     public function __invoke(Request $request): JsonResponse
     {
         try {
-            $cockpitNewsDto = $this->serializer->deserialize(
-                $request->getContent(),
-                CreateCockpitNewsDto::class,
+            $searchLogDto = $this->serializer->deserialize(
+                json_encode($request->query->all()),
+                SearchLogDto::class,
                 "json"
             );
         } catch (\Exception $e) {
             throw new \InvalidArgumentException($e->getMessage());
         }
 
-        $errors = $this->validator->validate($cockpitNewsDto);
+        $errors = $this->validator->validate($searchLogDto);
         if (count($errors)) {
             throw new ValidationException($errors);
         }
 
         return $this->json([
-            'count' => 0
+            'count' => $this->logService
+                ->getCount($searchLogDto)
         ], Response::HTTP_OK);
     }
 }

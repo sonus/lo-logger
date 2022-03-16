@@ -20,10 +20,7 @@ class Log
     private $statusCode;
 
     #[ORM\Column(type: 'datetimetz')]
-    private $startDate;
-
-    #[ORM\Column(type: 'datetimetz')]
-    private $endDate;
+    private $logDate;
 
     public function getId(): ?int
     {
@@ -54,26 +51,14 @@ class Log
         return $this;
     }
 
-    public function getStartDate(): ?\DateTimeInterface
+    public function getLogDate(): ?\DateTimeInterface
     {
-        return $this->startDate;
+        return $this->logDate;
     }
 
-    public function setStartDate(\DateTimeInterface $startDate): self
+    public function setLogDate(\DateTimeInterface $logDate): self
     {
-        $this->startDate = $startDate;
-
-        return $this;
-    }
-
-    public function getEndDate(): ?\DateTimeInterface
-    {
-        return $this->endDate;
-    }
-
-    public function setEndDate(\DateTimeInterface $endDate): self
-    {
-        $this->endDate = $endDate;
+        $this->logDate = $logDate;
 
         return $this;
     }

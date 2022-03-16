@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Config;
 use App\Entity\Log;
+use App\Service\Log\SearchLogDto;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -17,6 +18,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class LogRepository extends ServiceEntityRepository
 {
+    use RepositoryHelperTrait;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Log::class);
@@ -58,32 +61,36 @@ class LogRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    // /**
-    //  * @return Log[] Returns an array of Log objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param SearchLogDto $searchLogDto
+     * @return int
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getCount(
+        SearchLogDto $searchLogDto
+    ): int
     {
-        return $this->createQueryBuilder('l')
-            ->andWhere('l.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('l.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $qb = $this->createQueryBuilder('n')
+            ->select('count(n.serviceName) as count');
 
-    /*
-    public function findOneBySomeField($value): ?Log
-    {
-        return $this->createQueryBuilder('l')
-            ->andWhere('l.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        if ($searchLogDto->serviceNames) {
+            $qb->andWhere(
+                $qb->expr()->in('n.serviceName', ':servicesNames')
+            )->setParameter('servicesNames', $searchLogDto->serviceNames);
+        }
+        if ($searchLogDto->statusCode) {
+            $qb->andWhere('n.statusCode = :status')
+                ->setParameter('status', $searchLogDto->statusCode);
+        }
+        if ($searchLogDto->startDate && $searchLogDto->endDate) {
+            $qb->andWhere('n.logDate BETWEEN :startDate AND :endDate')
+                ->setParameter('startDate', $searchLogDto->startDate)
+                ->setParameter('endDate', $searchLogDto->endDate);
+        } else if ($searchLogDto->startDate) {
+            $qb->andWhere('n.logDate = :logDate')
+                ->setParameter('logDate', $searchLogDto->startDate);
+        }
+        $result = $qb->getQuery()->getOneOrNullResult();
+        return $result['count'];
     }
-    */
 }

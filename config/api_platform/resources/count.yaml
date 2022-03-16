@@ -1,6 +1,18 @@
-# /config/api_platform/resources/article.yaml
 App\Entity\Log:
   collectionOperations:
+    delete_all:
+      method: 'DELETE'
+      path: '/delete'
+      controller: App\Controller\DeleteController
+      defaults:
+        _api_receive: false
+      openapi_context:
+        tags:
+          - truncates
+        summary: Deletes logs
+        description: |
+          Delete endpoint will truncates the database with logs
+        operationId: searchLogs
     get_counts:
       method: 'GET'
       path: '/count'
@@ -15,7 +27,7 @@ App\Entity\Log:
           Count all matching items in the logs.
         operationId: searchLogs
         parameters:
-          - name: serviceNames
+          - name: serviceNames[]
             in: query
             description: array of service names
             required: false
